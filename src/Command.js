@@ -1,4 +1,5 @@
 import './AbortError'
+import './PromptExitError'
 
 import cast from 'as-type'
 import chalk from 'chalk'
@@ -17,6 +18,8 @@ export class Command {
 		arguments: { },
 		options: { }
 	}
+
+	exit = code => process.exit(code)
 
 	constructor(app, cli) {
 		this.app = app
@@ -163,13 +166,17 @@ export class Command {
 		.then(() => this.run())
 		.then(() => process.exit(0))
 		.catch(err => {
+			if(err instanceof PromptExitError) {
+				throw PromptExitError
+			}
+
 			if(err instanceof AbortError) {
 				this.error(err.message)
 			} else {
 				this.error(err.message, err.stack)
 			}
 
-			process.exit(1)
+			return process.exit(1)
 		})
 	}
 
